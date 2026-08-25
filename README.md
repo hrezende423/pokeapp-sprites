@@ -48,6 +48,34 @@ and the full set is 1,174 files.
 
 All 493 species ids are present with no gaps.
 
+## Metadata: `species-background-colors.json`
+
+Detail-page background colours for the species detail view, one pair per
+species, keyed by the same 3-digit zero-padded dex id the sprite filenames use:
+
+```json
+{
+  "001": { "bg_dark": "#214533", "bg_light": "#7ebe9d" },
+  "094": { "bg_dark": "#2a283a", "bg_light": "#7d78a0" }
+}
+```
+
+All 493 ids, no gaps. `bg_light` / `bg_dark` are the light- and dark-mode
+backgrounds for the artwork panel behind that species.
+
+Derived from analysis of the official artwork (k-means clustering over the real
+opaque pixels, largest cluster covering at least 6% of them at saturation 0.10 or
+above, near-black and near-white excluded) followed by species-by-species human
+curation — either a corrected colour or a deliberate reuse of another species'
+pair where two species genuinely look alike (#121 reuses #110, #197 reuses #198,
+and 20-odd more). Two more automated approaches were tried and rejected: a
+synthetic hue reconstruction, and k-means plus an automated contrast-solver. The
+simpler extraction plus direct review is the final answer, not a stopgap — see
+the consuming app's design system for the full methodology and revision history.
+
+It lives here rather than in the app because it is asset metadata about the
+artwork, on the same footing as the sprite files it describes.
+
 ## Known naming exception
 
 **#198 Murkrow** does not follow the convention above. It has a gender
