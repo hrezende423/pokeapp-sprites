@@ -7,19 +7,23 @@ national dex #001–493 (Gen 1–4).
 individual GitHub release asset with its own permanent, direct download URL.
 Nothing is zipped.
 
-## Two sets, two namespaces
+## Three sets
 
-| Set                 | Tags                | Files | Filenames                              |
-| ------------------- | ------------------- | ----- | -------------------------------------- |
-| Animated artwork    | `gen1`–`gen4`       | 1,174 | `{id}-front-{n\|s}[-{m\|f}].webp`       |
-| Black/White sprites | `bw-gen1`–`bw-gen4` | 2,340 | `{id}-bw-{front\|back}-{n\|s}[-f].webp` |
+| Set                       | Where               | Files | Names                                  |
+| ------------------------- | ------------------- | ----- | -------------------------------------- |
+| Animated artwork          | tags `gen1`–`gen4`  | 1,174 | `{id}-front-{n\|s}[-{m\|f}].webp`       |
+| Black/White sprites       | tags `bw-gen1`–`4`  | 2,340 | `{id}-bw-{front\|back}-{n\|s}[-f].webp` |
+| Keyed Gen 1–2 backgrounds | `transparent/` tree | 2,110 | `{game}/{slot}/{pokemon_id}.png`       |
 
-They are separate namespaces on purpose: the `-bw-` segment means the two can
-never collide inside a release, and the tags keep them in separate releases
-anyway. Both cover all 493 species.
+The two release sets are separate namespaces on purpose: the `-bw-` segment means
+they can never collide inside a release, and the tags keep them in separate
+releases anyway. Both cover all 493 species.
 
-The first set is the high-resolution animated artwork. The second is
-**PokéAPI's own animated sprites, converted** — see its section below.
+The first is the high-resolution animated artwork. The second is **PokéAPI's own
+animated sprites, converted**. The third is **PokéAPI's Gen 1–2 sprites with the
+white background removed** — committed as files rather than release assets,
+because 2,110 uploads of ~3 KB each is the wrong shape for a release. All three
+have their own section below.
 
 ## URL pattern — animated artwork
 
@@ -126,6 +130,48 @@ has to know which of the eight slots exists per species or it will request a
 404. The consuming app carries that as an 8-bit-per-species bitmask
 (`src/data/animatedSprites.ts`) with a script that re-derives it from the eight
 directory listings and cross-checks it against these releases.
+
+## Keyed Gen 1–2 backgrounds (`transparent/`)
+
+PokéAPI serves the Gen 1–2 sprites on an **opaque white background**. Most of
+those slots also exist under its own `transparent/` directory, so a consumer can
+prefer the counterpart and never render the white one — but 2,110 tiles have no
+counterpart:
+
+| Game       | Slots                                    | Files |
+| ---------- | ---------------------------------------- | ----- |
+| `red-blue` | `front_gray`, `back_gray`                | 302   |
+| `yellow`   | `front_gray`, `back_gray`                | 302   |
+| `gold`     | `front_shiny`, `back_default`, `back_shiny` | 753 |
+| `silver`   | `front_shiny`, `back_default`, `back_shiny` | 753 |
+
+Dropping those would lose every Game Boy grayscale sprite and every Gold/Silver
+back and shiny, so they are keyed to transparency here instead.
+
+```
+https://raw.githubusercontent.com/hrezende423/pokeapp-sprites/main/transparent/{game}/{slot}/{pokemon_id}.png
+```
+
+```
+.../transparent/red-blue/front_gray/1.png
+.../transparent/gold/back_shiny/152.png
+```
+
+Slot names are PokéAPI's own, so a consumer that already decodes slots needs no
+new vocabulary.
+
+### How the background was removed
+
+**Flood fill inward from the border, not a global colour key.** These sprites use
+the same `#ffffff` for eyes, teeth and highlights as for the background, so
+keying every white pixel punches holes in them — 344,194 interior white pixels
+across the set survive because only white that is *connected to the edge* is
+cleared. The fill is 4-connected, so it cannot leak through a one-pixel diagonal
+gap in a sprite's outline.
+
+Served from `raw.githubusercontent`, which is where every other game sprite in
+the consuming app comes from, and with the same `Access-Control-Allow-Origin: *`
+that lets a canvas read them back.
 
 ## Metadata: `species-background-colors.json`
 
