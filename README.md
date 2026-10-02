@@ -212,3 +212,21 @@ should special-case this id, or the files should be renamed to
 `198-front-n-m.webp` / `198-front-s-m.webp` to match everything else.
 
 Every other filename matches the convention exactly.
+
+## Official artwork, Gen 5+ (`artwork-gen5`–`artwork-gen9`, `artwork-forms`)
+
+Static official artwork for national dex #494–1025 and alternate forms, mirrored
+byte-identical from [PokeAPI/sprites](https://github.com/PokeAPI/sprites)
+(`sprites/pokemon/other/official-artwork`). Not yet consumed by the app, which
+still hotlinks PokéAPI.
+
+```
+https://github.com/hrezende423/pokeapp-sprites/releases/download/{tag}/{id}-{n|s}.png
+```
+
+`{id}` is the PokéAPI pokemon id, unpadded; `10001+` are forms (`artwork-forms`).
+Gen 5–9 cover 494–649 / 650–721 / 722–809 / 810–905 / 906–1025. Upstream has no
+shiny for forms 10158, 10159, 10277, 10309, 10318, 10322, 10323.
+
+`artwork-manifest.json` lists every file with its SHA-256; `scripts/mirror-artwork.sh`
+(needs `gh`, `jq`) creates the releases and uploads verified files, resumable.
