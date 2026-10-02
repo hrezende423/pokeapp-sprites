@@ -7,13 +7,13 @@ cd "$(dirname "$0")/.."
 REPO=hrezende423/pokeapp-sprites
 SRC=https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
-tags=("$@"); [ ${#tags[@]} -gt 0 ] || mapfile -t tags < <(jq -r 'keys[]' artwork-manifest.json)
+tags=("$@"); [ ${#tags[@]} -gt 0 ] || mapfile -t tags < <(jq -r 'keys[]' artwork-manifest.json | tr -d '\r')
 for tag in "${tags[@]}"; do
-  gh release view "$tag" -R $REPO >/dev/null 2>&1 || gh release create "$tag" -R $REPO \
+  gh release view "$tag" -R $REPO >/dev/null 2>&1 || gh release create "$tag" -R $REPO --latest=false \
     -t "Official artwork — $tag" -n "Static official artwork mirrored byte-identical from PokeAPI/sprites. Names: {id}-{n|s}.png (id = PokeAPI pokemon id; 10001+ are forms)."
-  have=$(gh release view "$tag" -R $REPO --json assets -q '.assets[].name')
+  have=$(gh release view "$tag" -R $REPO --json assets -q '.assets[].name' | tr -d '\r')
   jq -r --arg t "$tag" '.[$t].files | to_entries[] | "\(.key) \(.value)"' artwork-manifest.json |
-  while read -r name sha; do
+  tr -d '\r' | while read -r name sha; do
     grep -qxF "$name" <<<"$have" && continue
     id=${name%-*}; v=${name##*-}; v=${v%.png}; sub=""; [ "$v" = s ] && sub="shiny/"
     curl -sf --retry 3 -o "$tmp/$name" "$SRC/$sub$id.png"
